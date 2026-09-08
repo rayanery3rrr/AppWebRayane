@@ -1,4 +1,7 @@
 ﻿@page "/processos"
+@using AppWebRayane.Components.Model
+@using AppWebRayane.Components.DAO
+@inject ProcessoDAO ProcessoDAO
 
 <PageTitle> Processos - Sistema de Controle de Processos</PageTitle>
 
@@ -19,29 +22,32 @@
                     <th>Assunto</th>
                     <th>Situação</th>
                     <th>Ações</th>
+
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <th>1</th>
-                    <th>RO - 12354</th>
-                    <th>João Teixeira</th>
-                    <th>Solicitação de Ligação de Água</th>
-                    <th>Aberto</th>
-                    <th></th>
-                </tr>
-                <tr>
-                    <th>2</th>
-                    <th>RO - 12345</th>
-                    <th>Rayane da Silva</th>
-                    <th>Solicitação de Ligação de Água</th>
-                    <th>Aberto</th>
-                    <th></th>
-                </tr>
+                @foreach (var processo in processos)
+                {
+                    <tr>
+                        <td>@processo.Id</td>
+                        <td>@processo.Numero</td>
+                        <td>@processo.Interessado</td>
+                        <td>@processo.Assunto</td>
+                        <td>@processo.Situacao</td>
+                        <td></td>
+                    </tr>
+                }
+
             </tbody>
         </table>
     </div>
 </div>
 @code {
+    private List<Processo> processos = new();
+    protected override void OnInitialized()
+    {
+        // Chama o DAO para buscar os dados no banco
+        processos = ProcessoDAO.Listar();
 
+}
 }
