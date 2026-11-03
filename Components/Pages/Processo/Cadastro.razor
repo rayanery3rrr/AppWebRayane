@@ -1,0 +1,114 @@
+﻿@page "/processos/cadastro"
+@page "/processos/editar/{Id:int}"
+
+@rendermode InteractiveServer
+
+@using AppWebRayane.Components.Model
+@using AppWebRayane.Components.DAO
+@using Microsoft.AspNetCore.Components.Forms
+
+@inject ProcessoDAO dao
+@inject NavigationManager NavigationManager
+
+<PageTitle>@Titulo - Sistema de Controle de Processos</PageTitle>
+
+<h3>@Titulo</h3>
+
+@if (Id.HasValue && !processoEncontrado)
+{
+    <div class="alert alert-warning" role="alert">
+        Processo não encontrado.
+        <a href="/processos" class="alert-link">
+            Voltar para a lista
+        </a>
+    </div>
+}
+else
+{
+    <EditForm Model="@processo" OnValidSubmit="Salvar">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="row">
+
+            <div class="col-md-4">
+                <label for="situacao" class="form-label">
+                    Situação
+                </label>
+
+                <InputSelect id="situacao"
+                             class="form-select"
+                             @bind-Value="processo.Situacao">
+
+                    <option value="">Selecione a situação</option>
+                    <option value="Aberto">Aberto</option>
+                    <option value="Em analise">Em análise</option>
+                    <option value="Pendente">Pendente</option>
+                    <option value="Concluido">Concluído</option>
+                    <option value="Arquivado">Arquivado</option>
+
+                </InputSelect>
+
+                <ValidationMessage For="() => processo.Situacao" />
+            </div>
+
+        </div>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-lg"></i>
+                @(Id.HasValue ? "Atualizar" : "Salvar")
+            </button>
+
+            <a href="/processos" class="btn btn-secondary ms-2">
+                Cancelar
+            </a>
+        </div>
+
+    </EditForm>
+}
+
+@code {
+    private Processo processo = new();
+
+    private bool processoEncontrado = true;
+
+    [Parameter]
+    public int? Id { get; set; }
+
+    private string Titulo =>
+        Id.HasValue ? "Editar Processo" : "Cadastro de Processo";
+
+    protected override void OnParametersSet()
+    {
+        if (!Id.HasValue)
+        {
+            processo = new Processo();
+            processoEncontrado = true;
+            return;
+        }
+
+        var processoCarregado = dao.ObterPorId(Id.Value);
+
+        processoEncontrado = processoCarregado is not null;
+
+        if (processoCarregado is not null)
+        {
+            processo = processoCarregado;
+        }
+    }
+
+    private void Salvar()
+    {
+        if (Id.HasValue)
+        {
+            dao.Atualizar(processo);
+        }
+        else
+        {
+            dao.Inserir(processo);
+        }
+
+        NavigationManager.NavigateTo("/processos");
+    }
+}
